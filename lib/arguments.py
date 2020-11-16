@@ -5,7 +5,7 @@ import numpy as np
 from lib import utils
 
 
-def get_arguments():   # tested
+def hallucinate_get_arguments():   # tested
     parser = argparse.ArgumentParser()
     parser.add_argument("-l", "--length=", type=int, required=False, dest="length", default=60, help="sequence length")
     parser.add_argument("-a", "--aln=", type=str, required=False, dest="aln", default="", help="path to starting alignment file")
@@ -19,6 +19,16 @@ def get_arguments():   # tested
     parser.add_argument("--cst_weight=", type=float, required=False, dest="cst_weight", default=0.0, help="weight for the constraints loss term")
     parser.add_argument("--schedule=", type=str, required=False, dest='schedule',
                         default="0.1,20000,2.0,5000", help="simulated annealing schedule: 'T0,n_steps,decrease_factor,decrease_range'")
+    args = parser.parse_args()
+    return args
+
+
+def predict_get_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-a=", "--aln=", type=str, required=False, dest="aln", default="", help="path to alignment file")
+    parser.add_argument("-z=", "--npz=", type=str, required=False, dest="npz", default=None, help="path to npz file")
+    parser.add_argument("--trmodel=", type=str, required=False, dest="trmodel_directory",
+                        default="../models/trmodel", help="path to trRosetta network weights")
     args = parser.parse_args()
     return args
 

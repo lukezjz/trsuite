@@ -23,7 +23,7 @@ environment variable
 # python tr_suite/hallucinate.py -s hallucinate2/test/A.fasta -r A.resfile --background hallucinate2/models/bkgrd --model hallucinate2/models/trmodel
 # python tr_suite/hallucinate.py -l 102 -r s3l100.resfile --background hallucinate2/models/bkgrd --model hallucinate2/models/trmodel
 def main():
-    args = arguments.get_arguments()
+    args = arguments.hallucinate_get_arguments()
 
     ### aln: msa_aa, msa_idx, L
     ### length: L
