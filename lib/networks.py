@@ -145,11 +145,11 @@ class GetBackground:
 
 
 class GetFeatures:
-    def __init__(self, model_directory, length_, msa2input_features_cutoff=0.8):
+    def __init__(self, model_directory, length, msa2input_features_cutoff=0.8):
         self.models = []
         for model_weights in os.listdir(model_directory):
             model = TrNet(n_layers=61, n_filters=64, kernel_size=3, dropout_rate=0.0, n_filters_theta=25, n_filters_phi=13, n_filters_dist=37, n_filters_omega=25)
-            model.build(input_shape=(1, length_, length_, 526))
+            model.build(input_shape=(1, length, length, 526))
             path = os.path.join(model_directory, model_weights)
             model.load_weights(path)
             print(f"{path} loaded.")
@@ -157,7 +157,7 @@ class GetFeatures:
         self.msa2input_features = MSA2InputFeatures(msa2input_features_cutoff)
 
     def predict(self, msa):
-        input_features = self.msa2input_features.transform(msa)
+        input_features = tf.expand_dims(self.msa2input_features.transform(msa), axis=0)
         output_features = {"p_theta": [], "p_phi": [], "p_dist": [], "p_omega": []}
         for model in self.models:
             pt, pp, pd, po = model.predict(input_features)
@@ -173,51 +173,71 @@ class GetFeatures:
 
 
 class MSA2InputFeatures:
-    def __init__(self, cutoff=0.8, penalty=4.5):
+    def __init__(self, cutoff=0.8, penalty=4.5, diag=0.4):
         self.cutoff = cutoff
         self.penalty = penalty
+        self.diag = diag
 
-    def transform(self, msa):
-        msa1hot = tf.one_hot(msa, 21, dtype=tf.float32)  # shape: (n_seq, length_, 21)
-        n_seq, length_ = msa1hot.shape[:2]
+    def transform(self, msa, pssm=None):
+        msa1hot = tf.one_hot(msa, 21, dtype=tf.float32)  # shape: (n_seq, length, 21)
+        n_seq, length = msa1hot.shape[:2]
 
-        # ? reweight msa
-        id_min = tf.cast(length_, tf.float32) * self.cutoff  # 1d
-        id_mtx = tf.tensordot(msa1hot, msa1hot, [[1, 2], [1, 2]])  # shape: (n_seq, n_seq): (1, 1)
-        id_mask = id_mtx > id_min
-        weights = 1.0 / tf.reduce_sum(tf.cast(id_mask, dtype=tf.float32), axis=-1)  # (n_seq, )
+        x_i = msa1hot[0, :, :20]  # shape: (length, 20)
 
-        # ? f1d_pssm
-        f1d_seq = msa1hot[0, :, :20]  # shape: (length_, 20)
-        f_i = tf.reduce_sum(weights[:, None, None] * msa1hot, axis=0) / tf.reduce_sum(weights) + 1e-9  # shape: (length_, 21)
-        h_i = tf.reduce_sum(-f_i * tf.math.log(f_i), axis=1)  # shape: (length_, )
-        f1d_pssm = tf.concat([f1d_seq, f_i, h_i[:, None]], axis=1)  # shape: (length_, 20+21+1)
-        f1d = tf.expand_dims(f1d_pssm, axis=0)  # shape: (1, length_, 42)
-        f1d = tf.reshape(f1d, [1, length_, 42])
+        if pssm:
+            f_i = pssm
 
-        # ? f2d_dca
-        if n_seq == 1:
-            f2d_dca = tf.zeros([1, length_, length_, 442], tf.float32)
+            h_i = tf.reduce_sum(-f_i * tf.math.log(f_i + 1e-9), axis=1)  # shape: (length, )
+            feature1d = tf.concat([x_i, f_i, h_i[:, None]], axis=-1)  # shape: (length, 20+21+1)
+            feature1d = tf.reshape(feature1d, [length, 42])
+
+            if n_seq == 1:
+                print("not understood!")
+                ic = self.diag * tf.eye(length * 21)  # ???
+                ic = tf.reshape(ic, (length, 21, length, 21))
+                ic = tf.transpose(ic, (0, 2, 1, 3))
+                ic = tf.reshape(ic, (length, length, 441))
+                i0 = tf.zeros([length, length, 1])
+                f2d_dca = tf.concat([ic, i0], axis=-1)
+            else:
+                raise Exception("not realized!")
+
         else:
-            # ? cov
-            x = tf.reshape(msa1hot, (n_seq, length_ * 21))
-            num_points = tf.reduce_sum(weights) - tf.sqrt(tf.reduce_mean(weights))
-            mean = tf.reduce_sum(x * weights[:, None], axis=0, keepdims=True) / num_points
-            x = (x - mean) * tf.sqrt(weights[:, None])
-            cov = tf.matmul(tf.transpose(x), x) / num_points
-            # ? inverse covariance
-            cov_reg = cov + tf.eye(length_ * 21) * self.penalty / tf.sqrt(tf.reduce_sum(weights))
-            inv_cov = tf.linalg.inv(cov_reg)
-            x1 = tf.reshape(inv_cov, (length_, 21, length_, 21))
-            x2 = tf.transpose(x1, [0, 2, 1, 3])
-            features = tf.reshape(x2, (length_, length_, 21 * 21))
-            x3 = tf.sqrt(tf.reduce_sum(tf.square(x1[:, :-1, :, :-1]), (1, 3))) * (1 - tf.eye(length_))
-            apc = tf.reduce_sum(x3, 0, keepdims=True) * tf.reduce_sum(x3, 1, keepdims=True) / tf.reduce_sum(x3)
-            contacts = (x3 - apc) * (1 - tf.eye(length_))
-            f2d_dca = tf.concat([features, contacts[:, :, None]], axis=2)[None, :]
+            # ? reweight
+            identity_min = tf.cast(length, tf.float32) * self.cutoff
+            identity_matrix = tf.tensordot(msa1hot, msa1hot, [[1, 2], [1, 2]])  # shape: (n_seq, n_seq)
+            identity_mask = identity_matrix > identity_min
+            seq_weights = 1.0 / tf.reduce_sum(tf.cast(identity_mask, dtype=tf.float32), axis=-1)  # weights for each sequence, shape: (n_seq, )
+            f_i = tf.reduce_sum(seq_weights[:, None, None] * msa1hot, axis=0) / tf.reduce_sum(seq_weights)  # shape: (length, 21)
 
-        f2d = tf.concat([tf.tile(f1d[:, :, None, :], [1, 1, length_, 1]), tf.tile(f1d[:, None, :, :], [1, length_, 1, 1]), f2d_dca], axis=-1)
-        # shape: [(1, length_, length_, 42), (1, length_, length_, 42), (1, length_, length_, 442)] ---> (1, length_, length_, 526)
-        features_2d = tf.reshape(f2d, [1, length_, length_, 526])
+            h_i = tf.reduce_sum(-f_i * tf.math.log(f_i + 1e-9), axis=1)  # shape: (length, )
+            feature1d = tf.concat([x_i, f_i, h_i[:, None]], axis=-1)  # shape: (length, 20+21+1)
+            feature1d = tf.reshape(feature1d, [length, 42])
 
-        return features_2d
+            # ? f2d_dca
+            if n_seq == 1:
+                f2d_dca = tf.zeros([length, length, 442], tf.float32)
+            else:
+                # ? cov
+                print("only for PSP!")
+                x = tf.reshape(msa1hot, (n_seq, length * 21))   # shape: (n_seq, length * 21)
+                num_points = tf.reduce_sum(seq_weights) - tf.sqrt(tf.reduce_mean(seq_weights))   # shape: (,)
+                mean = tf.reduce_sum(x * seq_weights[:, None], axis=0, keepdims=True) / num_points   # shape: (1, length * 21)
+                x = (x - mean) * tf.sqrt(seq_weights[:, None])
+                cov = tf.matmul(tf.transpose(x), x) / num_points
+                # ? inverse covariance
+                cov_reg = cov + tf.eye(length * 21) * self.penalty / tf.sqrt(tf.reduce_sum(seq_weights))
+                inv_cov = tf.linalg.inv(cov_reg)
+                x1 = tf.reshape(inv_cov, (length, 21, length, 21))
+                x2 = tf.transpose(x1, [0, 2, 1, 3])
+                features = tf.reshape(x2, (length, length, 441))
+                x3 = tf.sqrt(tf.reduce_sum(tf.square(x1[:, :-1, :, :-1]), (1, 3))) * (1 - tf.eye(length))
+                apc = tf.reduce_sum(x3, 0, keepdims=True) * tf.reduce_sum(x3, 1, keepdims=True) / tf.reduce_sum(x3)
+                contacts = (x3 - apc) * (1 - tf.eye(length))
+                f2d_dca = tf.concat([features, contacts[:, :, None]], axis=-1)
+
+        features2d = tf.concat([tf.tile(feature1d[:, None, :], [1, length, 1]), tf.tile(feature1d[None, :, :], [length, 1, 1]), f2d_dca], axis=-1)
+        # shape: [(1, length, length, 42), (1, length, length, 42), (1, length, length, 442)] ---> (1, length, length, 526)
+        features2d = tf.reshape(features2d, [length, length, 526])
+
+        return features2d

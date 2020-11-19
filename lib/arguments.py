@@ -16,7 +16,7 @@ def hallucinate_get_arguments():   # tested
     parser.add_argument("--trmodel=", type=str, required=False, dest="trmodel_directory", default="../models/trmodel", help="path to trRosetta network weights")
     parser.add_argument("--background=", type=str, required=False, dest="background_directory", default="../models/bkgrd", help="path to background network weights")
     parser.add_argument("--aa_weight=", type=float, required=False, dest="aa_weight", default=0.0, help="weight for the aa composition biasing loss term")
-    parser.add_argument("--cst_weight=", type=float, required=False, dest="cst_weight", default=0.0, help="weight for the constraints loss term")
+    parser.add_argument("--cst_weight=", type=float, required=False, dest="cst_weight", default=1.0, help="weight for the constraints loss term")
     parser.add_argument("--schedule=", type=str, required=False, dest='schedule',
                         default="0.1,20000,2.0,5000", help="simulated annealing schedule: 'T0,n_steps,decrease_factor,decrease_range'")
     args = parser.parse_args()
@@ -79,9 +79,34 @@ def parse_resfile(resfile, L):   # tested
             raise Exception(f"{resfile} does not exist!")
 
 
-def parse_cstfile(cstfile):
+def parse_cstfile(cstfile, L):
     if cstfile:
         if os.path.isfile(cstfile):
-            pass
+            constraints, constraints_ = {}, {}
+            with open(cstfile) as fr:
+                for line in fr.readlines():
+                    split = line.split()
+                    type_ = split[0]
+                    i = int(split[1])
+                    j = int(split[2])
+                    metric = float(split[3])
+                    if type_ not in constraints_:
+                        constraints_[type_] = []
+                    if type_ == "theta":
+                        constraints_["theta"].append((i - 1, j - 1, utils.mtx2bins(metric, -np.pi, np.pi, 25)))
+                    elif type_ == "phi":
+                        constraints_["phi"].append((i - 1, j - 1, utils.mtx2bins(metric, 0.0, np.pi, 13)))
+                    elif type_ == "dist":
+                        constraints_["dist"].append((i - 1, j - 1, utils.mtx2bins(metric, 2.0, 20.0, 37)))
+                    elif type_ == "omega":
+                        constraints_["omega"].append((i - 1, j - 1, utils.mtx2bins(metric, -np.pi, np.pi, 25)))
+            for type_ in constraints_:
+                mask = np.zeros((L, L)).astype(bool)
+                cst = []
+                for i, j, metric1hot in sorted(constraints_[type_], key=lambda item_: (item_[0], item_[1])):
+                    mask[i][j] = True
+                    cst.append(metric1hot)
+                constraints[type_] = mask, np.array(cst)
+            return constraints
         else:
             raise Exception(f"{cstfile} does not exist!")

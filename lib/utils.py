@@ -33,3 +33,11 @@ def msa_aa2idx(msa_aa):
 
 def msa_idx2aa(msa_idx):
     return [seq_idx2aa(seq_idx) for seq_idx in msa_idx]
+
+
+def mtx2bins(x_ref, start, end, nbins, mask=None):
+    bins = np.linspace(start, end, nbins)
+    x_true = np.digitize(x_ref, bins).astype(np.uint8)
+    if mask:
+        x_true[mask] = 0
+    return np.eye(nbins + 1)[x_true][..., :-1]

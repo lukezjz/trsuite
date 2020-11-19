@@ -11,17 +11,17 @@ aa1_aa3 = {"A": "ALA", "R": "ARG", "N": "ASN", "D": "ASP", "C": "CYS", "Q": "GLN
            "LEU": "L", "LYS": "K", "MET": "M", "PHE": "F", "PRO": "P", "SER": "S", "THR": "T", "TRP": "W", "TYR": "Y", "VAL": "V"}
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-p", "--pdb=", type=str, required=False, dest="pdb", default=None, help="pdb file")
-parser.add_argument("-f", "--fasta=", type=str, required=False, dest="fasta", default=None, help="fasta file")
+parser.add_argument("-p", "--pdb=", type=str, required=False, dest="pdb", default=None, help="path to pdb file")
+parser.add_argument("-f", "--fasta=", type=str, required=False, dest="fasta", default=None, help="path to fasta file")
 parser.add_argument("-l", "--length=", type=int, required=False, dest="length", default=100, help="length of the sequence")
 parser.add_argument("-s", "--starting_id=", type=int, required=False, dest="starting_id", default=1, help="start index")
-parser.add_argument("-o", "--output=", type=str, required=False, dest="output", default=None, help="output file")
+parser.add_argument("-r", "--resfile=", type=str, required=False, dest="resfile", default=None, help="path to resfile")
 args = parser.parse_args()
 
 # resfile_lines: idx aa_allowed
 if args.pdb is not None and args.fasta is None:
     resfile_lines = [f"{res.get_id()[1] + args.starting_id - 1}   {aa1_aa3[res.get_resname()]}\n" for res in Bio.PDB.PDBParser().get_structure("", args.pdb)[0]["A"]]
-    output = args.pdb.split("/")[-1].rstrip(".pdb") + ".resfile"
+    resfile = args.pdb.split("/")[-1].rstrip(".pdb") + ".resfile"
 elif args.pdb is None and args.fasta is not None:
     with open(args.fasta) as fr:
         lines = fr.readlines()
@@ -30,17 +30,17 @@ elif args.pdb is None and args.fasta is not None:
         unk_aa = set(seq) - {"A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V"}
         assert not unk_aa, "{} in {} cannot be recognized!".format(",".join(list(unk_aa)), args.fasta)
         resfile_lines = [f"{idx + args.starting_id}   {aa}\n" for idx, aa in enumerate(seq)]
-        output = args.fasta.split("/")[-1].rstrip(".fasta") + ".resfile"
+        resfile = args.fasta.split("/")[-1].rstrip(".fasta") + ".resfile"
     else:
-        raise Exception(f"{args.fasta} cannot be recognized!")
+        raise Exception(f"File {args.fasta} cannot be recognized!")
 elif args.pdb is None and args.fasta is None:
     resfile_lines = [f"{idx + args.starting_id}   ARNDCQEGHILKMFPSTWYV\n" for idx in range(args.length)]
-    output = f"s{args.starting_id}l{args.length}.resfile"
+    resfile = f"s{args.starting_id}l{args.length}.resfile"
 else:
     raise Exception(f"pdb file and fasta file cannot be used simultaneously!")
 
-if args.output is not None:
-    output = args.output.rstrip(".resfile") + ".resfile"
+if args.resfile is not None:
+    resfile = args.resfile.rstrip(".resfile") + ".resfile"
 
-with open(output, "w") as fw:
+with open(resfile, "w") as fw:
     fw.writelines(resfile_lines)

@@ -51,9 +51,6 @@ def main():
 
     print(f"starting sequence: {msa_aa[0]}")
 
-    # ! parse_cstfile
-    # ! args.cst_weight * losses.constraints_loss()
-
     ### bkgrd
     bkgrd = networks.GetBackground(args.background_directory, L).generate()
 
@@ -62,11 +59,17 @@ def main():
 
     ### loss_function
     def loss_function(msa):
-        background_loss = losses.background_loss(bkgrd, get_features.predict(msa))
+        features = get_features.predict(msa)
+        background_loss = losses.background_loss(bkgrd, features)
         aa_loss = losses.aa_loss(msa)
-        # cst_loss = losses.cst_loss
         total_loss = background_loss + args.aa_weight * aa_loss   # + constraints_loss
-        return {"background_loss": background_loss, "aa_loss": aa_loss, "total_loss": total_loss}
+        if args.cstfile:
+            constraints = arguments.parse_cstfile(args.cstfile)
+            cst_loss = losses.constraints_loss(constraints, features)
+            total_loss += args.cst_weight * cst_loss
+            return {"background_loss": background_loss, "aa_loss": aa_loss, "constraints_loss": cst_loss, "total_loss": total_loss}
+        else:
+            return {"background_loss": background_loss, "aa_loss": aa_loss, "total_loss": total_loss}
 
     ### T0, n_steps, decrease_factor, decrease_range
     tmp = args.schedule.split(",")
