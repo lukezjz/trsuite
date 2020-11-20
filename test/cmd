@@ -7,5 +7,5 @@ cat A.resfile > design.resfile
 cat GS.resfile >> design.resfile
 cat s75l60.resfile >> design.resfile
 python ../tools/make_cstfile.py -p A.pdb -c design.cstfile --type dist
-
+python ../tools/hallucinate.py -l 134 -r design.resfile -c design.cstfile --trmodel ../models/trmodel/ --background ../models/bkgrd/
 
