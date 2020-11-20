@@ -108,11 +108,11 @@ class TrNet(tf.keras.Model):   # tested
         conv_theta, conv_phi = self.conv_theta(h), self.conv_phi(h)
         symmetry = 0.5 * (h + tf.transpose(h, perm=[0, 2, 1, 3]))
         conv_dist, conv_omega = self.conv_dist(symmetry), self.conv_omega(symmetry)
-        p_theta = tf.nn.softmax(conv_theta)
-        p_phi = tf.nn.softmax(conv_phi)
-        p_dist = tf.nn.softmax(conv_dist)
-        p_omega = tf.nn.softmax(conv_omega)
-        return p_theta, p_phi, p_dist, p_omega   # shape: (length, length, 25), (length, length, 13), (length, length, 37), (length, length, 25)
+        theta = tf.nn.softmax(conv_theta)
+        phi = tf.nn.softmax(conv_phi)
+        dist = tf.nn.softmax(conv_dist)
+        omega = tf.nn.softmax(conv_omega)
+        return theta, phi, dist, omega   # shape: (length, length, 25), (length, length, 13), (length, length, 37), (length, length, 25)
 
 
 class GetBackground:
@@ -132,15 +132,15 @@ class GetBackground:
         if seed is not None:
             np.random.seed(seed)
         inputs = np.random.normal(size=(5, self.length, self.length, 64))
-        outputs = {"p_theta": [], "p_phi": [], "p_dist": [], "p_omega": []}
+        outputs = {"theta": [], "phi": [], "dist": [], "omega": []}
         for model in self.models:
             pt, pp, pd, po = model.predict(inputs)
-            outputs["p_theta"].append(pt[0])
-            outputs["p_phi"].append(pp[0])
-            outputs["p_dist"].append(pd[0])
-            outputs["p_omega"].append(po[0])
+            outputs["theta"].append(pt[0])
+            outputs["phi"].append(pp[0])
+            outputs["dist"].append(pd[0])
+            outputs["omega"].append(po[0])
         for key in outputs:
-            outputs[key] = np.mean(outputs[key], axis=0)
+            outputs[key] = tf.reduce_mean(outputs[key], axis=0)
         return outputs
 
 
@@ -158,18 +158,29 @@ class GetFeatures:
 
     def predict(self, msa):
         input_features = tf.expand_dims(self.msa2input_features.transform(msa), axis=0)
-        output_features = {"p_theta": [], "p_phi": [], "p_dist": [], "p_omega": []}
+        output_features = {"theta": [], "phi": [], "dist": [], "omega": []}
         for model in self.models:
             pt, pp, pd, po = model.predict(input_features)
-            output_features["p_theta"].append(pt[0])
-            output_features["p_phi"].append(pp[0])
-            output_features["p_dist"].append(pd[0])
-            output_features["p_omega"].append(po[0])
+            output_features["theta"].append(pt[0])
+            output_features["phi"].append(pp[0])
+            output_features["dist"].append(pd[0])
+            output_features["omega"].append(po[0])
 
         for key in output_features:
-            output_features[key] = np.mean(output_features[key], axis=0)
+            output_features[key] = tf.reduce_mean(output_features[key], axis=0)
 
         return output_features
+
+
+# def PSSM2Features(pssm_initializer, sample=False):
+#     # ref: https://blog.evjang.com/2016/11/tutorial-categorical-variational.html
+#     if sample:
+#         pssm_ = tf.Variable(pssm_initializer)
+#         U = tf.random.uniform(tf.shape(pssm_), minval=0, maxval=1)
+#         pssm = tf.nn.softmax(pssm_ - tf.math.log(-tf.math.log(U + 1e-9) + 1e-9))
+#     pssm = tf.nn.softmax(pssm_initializer, -1)
+#     y_seq = tf.one_hot(tf.argmax(pssm, -1), 20)  # shape: (1, n_seq, L) -> (1, n_seq, L, 20)
+#     y_seq = tf.stogradient(y_seq - pssm) + pssm  # gradient bypass
 
 
 class MSA2InputFeatures:

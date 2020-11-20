@@ -64,7 +64,7 @@ def main():
         aa_loss = losses.aa_loss(msa)
         total_loss = background_loss + args.aa_weight * aa_loss   # + constraints_loss
         if args.cstfile:
-            constraints = arguments.parse_cstfile(args.cstfile)
+            constraints = arguments.parse_cstfile(args.cstfile, L)
             cst_loss = losses.constraints_loss(constraints, features)
             total_loss += args.cst_weight * cst_loss
             return {"background_loss": background_loss, "aa_loss": aa_loss, "constraints_loss": cst_loss, "total_loss": total_loss}

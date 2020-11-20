@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
+
 # database
 aa_probabilities = np.array([[0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
                               0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]])
@@ -8,7 +9,6 @@ aa_bkgr = tf.constant(np.array([0.07892653, 0.04979037, 0.0451488, 0.0603382, 0.
                                 0.03783883, 0.06592534, 0.07122109, 0.02324815, 0.05647807,
                                 0.09311339, 0.05980368, 0.02072943, 0.04145316, 0.04631926,
                                 0.06123779, 0.0547427, 0.01489194, 0.03705282, 0.0691271]), dtype=tf.float32)
-
 
 aa2idx = {"A": 0, "R": 1, "N": 2, "D": 3, "C": 4, "Q": 5, "E": 6, "G": 7, "H": 8, "I": 9, "L": 10,
           "K": 11, "M": 12, "F": 13, "P": 14, "S": 15, "T": 16, "W": 17, "Y": 18, "V": 19, "-": 20}
@@ -24,7 +24,7 @@ def seq_aa2idx(seq_aa):
 
 
 def seq_idx2aa(seq_idx):
-    return ''.join([idx2aa[idx] for idx in seq_idx])
+    return "".join([idx2aa[idx] for idx in seq_idx])
 
 
 def msa_aa2idx(msa_aa):

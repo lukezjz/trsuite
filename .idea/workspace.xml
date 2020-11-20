@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fed738f2-f64b-49e5-a861-3adf44ea0c33" name="Default Changelist" comment="1. New function: arguments.parse_cstfile(cstfile)&#10;2. New function: losses.constraints_loss">
+    <list default="true" id="fed738f2-f64b-49e5-a861-3adf44ea0c33" name="Default Changelist" comment="Nov 20&#10;1. rename p_&lt;metric&gt; to &lt;metric&gt;&#10;2. correct losses.constraints(constraints, features)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/arguments.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/arguments.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/losses.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/losses.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/networks.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/networks.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tools/hallucinate.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/hallucinate.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/make_cstfile.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/make_cstfile.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/make_resfile.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/make_resfile.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/predict.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/predict.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,17 +59,29 @@
       <option name="presentableId" value="Default" />
       <updated>1605628874884</updated>
     </task>
+    <task id="LOCAL-00001" summary="1. New function: arguments.parse_cstfile(cstfile)&#10;2. New function: losses.constraints_loss(constraints, features)&#10;3. networks.MSA2InputFeatures can treat real MSA and PSFM.&#10;4. New function: utils.mtx2bins(x_ref, start, end, nbins)&#10;5. Update loss_function(msa) in hallucinate.main() for constraints loss.&#10;6. make_cstfile.py&#10;7. Add timer in predict.py for loading model and prediction.">
+      <created>1605781787576</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1605781787576</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="1. New function: arguments.parse_cstfile(cstfile)&#10;2. New function: losses.constraints_loss(constraints, features)&#10;3. networks.MSA2InputFeatures can treat real MSA and PSFM.&#10;4. New function: utils.mtx2bins(x_ref, start, end, nbins)&#10;5. Update loss_function(msa) in hallucinate.main() for constraints loss.&#10;6. make_cstfile.py&#10;7. Add timer in predict.py for loading model and prediction." />
+    <option name="LAST_COMMIT_MESSAGE" value="1. New function: arguments.parse_cstfile(cstfile)&#10;2. New function: losses.constraints_loss(constraints, features)&#10;3. networks.MSA2InputFeatures can treat real MSA and PSFM.&#10;4. New function: utils.mtx2bins(x_ref, start, end, nbins)&#10;5. Update loss_function(msa) in hallucinate.main() for constraints loss.&#10;6. make_cstfile.py&#10;7. Add timer in predict.py for loading model and prediction." />
+  </component>
   <component name="WindowStateProjectService">
-    <state x="139" y="44" width="1300" height="1028" key="CommitChangelistDialog2" timestamp="1605781413080">
+    <state x="139" y="44" width="1300" height="1028" key="CommitChangelistDialog2" timestamp="1605851221014">
       <screen x="56" y="27" width="1864" height="1053" />
     </state>
-    <state x="139" y="44" width="1300" height="1028" key="CommitChangelistDialog2/56.27.1864.1053@56.27.1864.1053" timestamp="1605781413080" />
-    <state x="56" y="122" width="1491" height="879" key="DiffContextDialog" timestamp="1605781383875">
+    <state x="139" y="44" width="1300" height="1028" key="CommitChangelistDialog2/56.27.1864.1053@56.27.1864.1053" timestamp="1605851221014" />
+    <state x="56" y="122" width="1491" height="879" key="DiffContextDialog" timestamp="1605781592322">
       <screen x="56" y="27" width="1864" height="1053" />
     </state>
-    <state x="56" y="122" width="1491" height="879" key="DiffContextDialog/56.27.1864.1053@56.27.1864.1053" timestamp="1605781383875" />
+    <state x="56" y="122" width="1491" height="879" key="DiffContextDialog/56.27.1864.1053@56.27.1864.1053" timestamp="1605781592322" />
     <state x="771" y="311" width="424" height="491" key="FileChooserDialogImpl" timestamp="1605753531179">
       <screen x="56" y="27" width="1864" height="1053" />
     </state>
@@ -82,6 +90,10 @@
       <screen x="56" y="27" width="1864" height="1053" />
     </state>
     <state x="477" y="188" width="1022" height="737" key="SettingsEditor/56.27.1864.1053@56.27.1864.1053" timestamp="1605629027905" />
+    <state x="583" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2" timestamp="1605781820521">
+      <screen x="56" y="27" width="1864" height="1053" />
+    </state>
+    <state x="583" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2/56.27.1864.1053@56.27.1864.1053" timestamp="1605781820521" />
     <state x="651" y="259" width="672" height="678" key="search.everywhere.popup" timestamp="1605778330816">
       <screen x="56" y="27" width="1864" height="1053" />
     </state>

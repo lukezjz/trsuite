@@ -3,8 +3,8 @@ from lib import utils
 
 
 def background_loss(background_features, features):   # , mask=None):
-    bt, bp, bd, bo = background_features["p_theta"], background_features["p_phi"], background_features["p_dist"], background_features["p_omega"]
-    pt, pp, pd, po = features["p_theta"], features["p_phi"], features["p_dist"], features["p_omega"]
+    bt, bp, bd, bo = background_features["theta"], background_features["phi"], background_features["dist"], background_features["omega"]
+    pt, pp, pd, po = features["theta"], features["phi"], features["dist"], features["omega"]
     # if mask is None:
     #     length = bp.shape[0]
     #     mask = tf.cast(tf.ones((length, length)), dtype=tf.bool)
@@ -29,5 +29,5 @@ def constraints_loss(constraints, features):
     cst_loss = 0
     for type_ in constraints:
         mask, cst = constraints[type_]
-        cst_loss += tf.reduce_mean(tf.keras.losses.categorical_crossentropy(cst, features[mask]))
+        cst_loss += tf.reduce_mean(tf.keras.losses.categorical_crossentropy(cst, features[type_][mask]))
     return cst_loss
