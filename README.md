@@ -38,7 +38,7 @@ optional arguments:
                         path to resfile
 
 
-
+===========================
 usage: hallucinate.py [-h] [-l LENGTH] [-a ALN] [-r RESFILE] [-c CSTFILE]
                       [-o OUTPUT] [-z NPZ] [--trmodel= TRMODEL_DIRECTORY]
                       [--background= BACKGROUND_DIRECTORY]
