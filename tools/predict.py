@@ -1,18 +1,30 @@
 import os
 import sys
 import logging
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.environ["TF_CPMIN_LOG_LEVEL"] = "3"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 logging.disable(logging.WARNING)
-from lib import arguments, utils, networks
-import numpy as np
 import time
+import argparse
+import numpy as np
+from lib import utils, networks
+
+
+def get_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-a=", "--aln=", type=str, required=False, dest="aln", default="", help="path to alignment file")
+    parser.add_argument("-z=", "--npz=", type=str, required=False, dest="npz", default=None, help="path to npz file")
+    parser.add_argument("--trmodel=", type=str, required=False, dest="trmodel_directory",
+                        default="../models/trmodel", help="path to trRosetta network weights")
+    args = parser.parse_args()
+    return args
 
 
 def main():
-    args = arguments.predict_get_arguments()
+    args = get_arguments()
 
-    msa_aa = arguments.parse_aln(args.aln)
+    msa_aa = utils.parse_aln(args.aln)
     msa_idx = utils.msa_aa2idx(msa_aa)
     print(msa_aa[0])
 
@@ -23,7 +35,7 @@ def main():
     features = get_features.predict(msa_idx)
     end_time = time.time()
     print(f"Prediction takes {round(end_time - middle_time)}s.")
-    np.savez_compressed(args.npz, theta=features["p_theta"], phi=features["p_phi"], dist=features["p_dist"], omega=features["p_omega"])
+    np.savez_compressed(args.npz, theta=features["theta"], phi=features["phi"], dist=features["dist"], omega=features["omega"])
     print("done.")
 
 

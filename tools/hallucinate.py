@@ -5,32 +5,39 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 logging.disable(logging.WARNING)
-from lib import arguments, utils, networks, losses, optimizers
+import time
+import argparse
 import numpy as np
+from lib import utils, networks, losses, optimizers
 
 
-"""
-import tensorflow as tf
+def get_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-l", "--length=", type=int, required=False, dest="length", default=60, help="sequence length")
+    parser.add_argument("-a", "--aln=", type=str, required=False, dest="aln", default="", help="path to starting alignment file")
+    parser.add_argument("-r", "--resfile=", type=str, required=False, dest="resfile", default="", help="path to resfile")
+    parser.add_argument("-c", "--cstfile=", type=str, required=False, dest="cstfile", default="", help="path to constraint file")
+    parser.add_argument("-o", "--output", type=str, required=False, dest="output", default=f"output_{time.strftime('%Y%m%d%H%M%S')}.csv", help="path to output file")
+    parser.add_argument("-z", "--npz", type=str, required=False, dest="npz", default=None, help="path to npz file")
+    parser.add_argument("--trmodel=", type=str, required=False, dest="trmodel_directory", default="../models/trmodel", help="path to trRosetta network weights")
+    parser.add_argument("--background=", type=str, required=False, dest="background_directory", default="../models/bkgrd", help="path to background network weights")
+    parser.add_argument("--aa_weight=", type=float, required=False, dest="aa_weight", default=0.0, help="weight for the aa composition biasing loss term")
+    parser.add_argument("--cst_bias=", type=float, required=False, dest="cst_bias", default=0.2, help="bias of the constraints loss term")
+    parser.add_argument("--schedule=", type=str, required=False, dest='schedule',
+                        default="0.1,20000,2.0,5000", help="simulated annealing schedule: 'T0,n_steps,decrease_factor,decrease_range'")
+    args = parser.parse_args()
+    return args
 
-gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
-for gpu in gpus:
-    tf.config.experimental.set_memory_growth(gpu, True)
-environment variable
-"""
 
-
-# python tr_suite/hallucinate.py --background hallucinate2/models/bkgrd --model hallucinate2/models/trmodel
-# python tr_suite/hallucinate.py -s hallucinate2/test/A.fasta -r A.resfile --background hallucinate2/models/bkgrd --model hallucinate2/models/trmodel
-# python tr_suite/hallucinate.py -l 102 -r s3l100.resfile --background hallucinate2/models/bkgrd --model hallucinate2/models/trmodel
 def main():
-    args = arguments.hallucinate_get_arguments()
+    args = get_arguments()
 
     ### aln: msa_aa, msa_idx, L
     ### length: L
     msa_aa = None
     msa_idx = None
     if args.aln:
-        msa_aa = arguments.parse_aln(args.aln)
+        msa_aa = utils.parse_aln(args.aln)
         msa_idx = utils.msa_aa2idx(msa_aa)
         L = msa_idx.shape[1]
     else:
@@ -39,7 +46,7 @@ def main():
     ### aa_probabilities_L
     aa_probabilities_L = np.tile(utils.aa_probabilities, (L, 1))
     if args.resfile:
-        aa_allowed = arguments.parse_resfile(args.resfile, L)
+        aa_allowed = utils.parse_resfile(args.resfile, L)
         aa_probabilities_L *= aa_allowed
         aa_probabilities_L /= np.sum(aa_probabilities_L, axis=1).reshape((-1, 1))
 
@@ -51,23 +58,21 @@ def main():
 
     print(f"starting sequence: {msa_aa[0]}")
 
-    ### bkgrd
-    bkgrd = networks.GetBackground(args.background_directory, L).generate()
-
     ### model
     get_features = networks.GetFeatures(args.trmodel_directory, L)
 
     ### loss_function
+    bkgrd = networks.GetBackground(args.background_directory, L).generate()
+    constraints = utils.parse_cstfile(args.cstfile, L)
+
     def loss_function(msa):
         features = get_features.predict(msa)
         background_loss = losses.background_loss(bkgrd, features)
         aa_loss = losses.aa_loss(msa)
         total_loss = background_loss + args.aa_weight * aa_loss   # + constraints_loss
         if args.cstfile:
-            constraints = arguments.parse_cstfile(args.cstfile, L)
             cst_loss = losses.constraints_loss(constraints, features)
-            total_loss += args.cst_weight * cst_loss
-            return {"background_loss": background_loss, "aa_loss": aa_loss, "constraints_loss": cst_loss, "total_loss": total_loss}
+            return {"background_loss": background_loss, "aa_loss": aa_loss, "total_loss": total_loss, "constraints_loss": cst_loss}
         else:
             return {"background_loss": background_loss, "aa_loss": aa_loss, "total_loss": total_loss}
 
@@ -76,7 +81,7 @@ def main():
     schedule = [float(tmp[0]), int(tmp[1]), float(tmp[2]), int(tmp[3])]
 
     ### optimizer
-    optimizer = optimizers.SimulatedAnnealing(schedule, aa_probabilities_L)
+    optimizer = optimizers.SimulatedAnnealing(schedule, aa_probabilities_L, cst_bias=args.cst_bias)
 
     ### generate seq
     final_msa_idx = optimizer.iterator(msa_idx, loss_function, args.output)

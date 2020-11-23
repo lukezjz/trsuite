@@ -4,6 +4,11 @@ import numpy as np
 import os
 
 
+gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
+for gpu in gpus:
+    tf.config.experimental.set_memory_growth(gpu, True)
+
+
 # bkgrd_folder = "bkgrd01"
 # n_layers_ = 36
 # Conv2d_kernel0 = np.load(f"../models/{bkgrd_folder}/conv2d-kernel.npy")
