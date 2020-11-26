@@ -2,16 +2,24 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fed738f2-f64b-49e5-a861-3adf44ea0c33" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/tools/top.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/csv2fasta.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/make_bkgrd_loss_weights.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/arguments.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/losses.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/losses.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/networks.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/networks.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/optimizers.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/optimizers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/output_20201120133024.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/A.pdb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/A.resfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/GS.fasta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/GS.resfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/design.cstfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/design.resfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/s75l60.resfile" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/tools/hallucinate.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/hallucinate.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tools/predict.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/predict.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/top.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/top.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,6 +35,7 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="ProjectId" id="1kQNV17uyhcMcwVpzABcpifJxA9" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -35,6 +44,7 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../../trDesign-master_original" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
@@ -106,7 +116,14 @@
       <option name="project" value="LOCAL" />
       <updated>1605867768051</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Nov 20 18:20&#10;1. Delete arguments.py&#10;2. New file: top.py&#10;3. Modify SA algorithm in utils.optimizers">
+      <created>1606121955754</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1606121955754</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -114,37 +131,46 @@
     <MESSAGE value="Nov 20&#10;1. rename p_&lt;metric&gt; to &lt;metric&gt;&#10;2. correct losses.constraints(constraints, features)" />
     <MESSAGE value="Nov 20 13:50&#10;1. Rename p_&lt;metric&gt; to &lt;metric&gt;&#10;2. Correct losses.constraints(constraints, features)&#10;3. Add folder test/" />
     <MESSAGE value="Nov 20 18:20&#10;1. Readme" />
-    <option name="LAST_COMMIT_MESSAGE" value="Nov 20 18:20&#10;1. Readme" />
+    <MESSAGE value="Nov 20 18:20&#10;1. Delete arguments.py&#10;2. New file: top.py&#10;3. Modify SA algorithm in utils.optimizers" />
+    <option name="LAST_COMMIT_MESSAGE" value="Nov 20 18:20&#10;1. Delete arguments.py&#10;2. New file: top.py&#10;3. Modify SA algorithm in utils.optimizers" />
   </component>
   <component name="WindowStateProjectService">
     <state x="721" y="302" width="524" height="509" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1606110529888">
       <screen x="56" y="27" width="1864" height="1053" />
     </state>
     <state x="721" y="302" width="524" height="509" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/56.27.1864.1053@56.27.1864.1053" timestamp="1606110529888" />
-    <state x="139" y="44" width="1300" height="1028" key="CommitChangelistDialog2" timestamp="1605867768003">
+    <state x="139" y="44" width="1300" height="1028" key="CommitChangelistDialog2" timestamp="1606121955604">
       <screen x="56" y="27" width="1864" height="1053" />
     </state>
-    <state x="139" y="44" width="1300" height="1028" key="CommitChangelistDialog2/56.27.1864.1053@56.27.1864.1053" timestamp="1605867768003" />
-    <state x="56" y="122" width="1491" height="879" key="DiffContextDialog" timestamp="1605781592322">
+    <state x="139" y="44" width="1300" height="1028" key="CommitChangelistDialog2/56.27.1864.1053@56.27.1864.1053" timestamp="1606121955604" />
+    <state x="56" y="122" width="1491" height="879" key="DiffContextDialog" timestamp="1606121893678">
       <screen x="56" y="27" width="1864" height="1053" />
     </state>
-    <state x="56" y="122" width="1491" height="879" key="DiffContextDialog/56.27.1864.1053@56.27.1864.1053" timestamp="1605781592322" />
+    <state x="56" y="122" width="1491" height="879" key="DiffContextDialog/56.27.1864.1053@56.27.1864.1053" timestamp="1606121893678" />
     <state x="771" y="311" width="424" height="491" key="FileChooserDialogImpl" timestamp="1605753531179">
       <screen x="56" y="27" width="1864" height="1053" />
     </state>
     <state x="771" y="311" width="424" height="491" key="FileChooserDialogImpl/56.27.1864.1053@56.27.1864.1053" timestamp="1605753531179" />
+    <state x="619" y="316" width="728" height="482" key="MultipleFileMergeDialog" timestamp="1606122004971">
+      <screen x="56" y="27" width="1864" height="1053" />
+    </state>
+    <state x="619" y="316" width="728" height="482" key="MultipleFileMergeDialog/56.27.1864.1053@56.27.1864.1053" timestamp="1606122004971" />
     <state x="477" y="188" width="1022" height="737" key="SettingsEditor" timestamp="1605629027905">
       <screen x="56" y="27" width="1864" height="1053" />
     </state>
     <state x="477" y="188" width="1022" height="737" key="SettingsEditor/56.27.1864.1053@56.27.1864.1053" timestamp="1605629027905" />
-    <state x="583" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2" timestamp="1605867788999">
+    <state x="583" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2" timestamp="1606122018976">
       <screen x="56" y="27" width="1864" height="1053" />
     </state>
-    <state x="583" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2/56.27.1864.1053@56.27.1864.1053" timestamp="1605867788999" />
-    <state x="769" y="468" width="428" height="177" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1606110407084">
+    <state x="583" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2/56.27.1864.1053@56.27.1864.1053" timestamp="1606122018976" />
+    <state x="156" y="127" width="1664" height="853" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1606312713731">
       <screen x="56" y="27" width="1864" height="1053" />
     </state>
-    <state x="769" y="468" width="428" height="177" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/56.27.1864.1053@56.27.1864.1053" timestamp="1606110407084" />
+    <state x="156" y="127" width="1664" height="853" key="com.intellij.history.integration.ui.views.FileHistoryDialog/56.27.1864.1053@56.27.1864.1053" timestamp="1606312713731" />
+    <state x="769" y="468" width="428" height="177" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1606141108118">
+      <screen x="56" y="27" width="1864" height="1053" />
+    </state>
+    <state x="769" y="468" width="428" height="177" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/56.27.1864.1053@56.27.1864.1053" timestamp="1606141108118" />
     <state x="651" y="259" width="672" height="678" key="search.everywhere.popup" timestamp="1606110452914">
       <screen x="56" y="27" width="1864" height="1053" />
     </state>

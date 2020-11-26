@@ -25,8 +25,7 @@ class SimulatedAnnealing:
                 current_losses = loss_function(current_msa)
 
                 if "constraints_loss" in losses and losses["constraints_loss"] > cst_loss:
-                    print(losses["constraints_loss"])
-                    print(cst_loss)
+                    print(losses["constraints_loss"], cst_loss)
                     continue
                 else:
                     marker = False
@@ -53,6 +52,7 @@ class SimulatedAnnealing:
 
     def sampler(self, msa):
         current_msa = msa.copy()
-        idx = np.random.choice(self.idx_allowed)
-        current_msa[0, idx] = np.random.choice(self.aa_idx, p=self.aa_probabilities_L[idx])
+        for i in range(1):
+            idx = np.random.choice(self.idx_allowed)
+            current_msa[0, idx] = np.random.choice(self.aa_idx, p=self.aa_probabilities_L[idx])
         return current_msa

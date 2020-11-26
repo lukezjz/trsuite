@@ -163,6 +163,13 @@ class GetFeatures:
 
     def predict(self, msa):
         input_features = tf.expand_dims(self.msa2input_features.transform(msa), axis=0)
+        i = np.random.randint(len(self.models))
+        pt, pp, pd, po = self.models[i].predict(input_features)
+        output_features = {"theta": pt[0], "phi": pp[0], "dist": pd[0], "omega": po[0]}
+        return output_features
+
+    def predict_(self, msa):
+        input_features = tf.expand_dims(self.msa2input_features.transform(msa), axis=0)
         output_features = {"theta": [], "phi": [], "dist": [], "omega": []}
         for model in self.models:
             pt, pp, pd, po = model.predict(input_features)
@@ -170,10 +177,8 @@ class GetFeatures:
             output_features["phi"].append(pp[0])
             output_features["dist"].append(pd[0])
             output_features["omega"].append(po[0])
-
         for key in output_features:
             output_features[key] = tf.reduce_mean(output_features[key], axis=0)
-
         return output_features
 
 

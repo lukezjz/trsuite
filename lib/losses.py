@@ -2,16 +2,13 @@ import tensorflow as tf
 from lib import utils
 
 
-def background_loss(background_features, features):   # , mask=None):
+def background_loss(background_features, features, weights):
     bt, bp, bd, bo = background_features["theta"], background_features["phi"], background_features["dist"], background_features["omega"]
     pt, pp, pd, po = features["theta"], features["phi"], features["dist"], features["omega"]
-    # if mask is None:
-    #     length = bp.shape[0]
-    #     mask = tf.cast(tf.ones((length, length)), dtype=tf.bool)
-    theta_bkgrd_loss = -tf.math.reduce_mean(tf.math.reduce_sum(pt * tf.math.log(pt / bt), axis=-1))   # [mask])
-    phi_bkgrd_loss = -tf.math.reduce_mean(tf.math.reduce_sum(pp * tf.math.log(pp / bp), axis=-1))   # [mask])
-    dist_bkgrd_loss = -tf.math.reduce_mean(tf.math.reduce_sum(pd * tf.math.log(pd / bd), axis=-1))   # [mask])
-    omega_bkgrd_loss = -tf.math.reduce_mean(tf.math.reduce_sum(po * tf.math.log(po / bo), axis=-1))   # [mask])
+    theta_bkgrd_loss = -tf.math.reduce_mean(tf.math.reduce_sum(pt * tf.math.log(pt / bt + 1e-9), axis=-1) * weights["theta"])
+    phi_bkgrd_loss = -tf.math.reduce_mean(tf.math.reduce_sum(pp * tf.math.log(pp / bp + 1e-9), axis=-1) * weights["phi"])
+    dist_bkgrd_loss = -tf.math.reduce_mean(tf.math.reduce_sum(pd * tf.math.log(pd / bd + 1e-9), axis=-1) * weights["dist"])
+    omega_bkgrd_loss = -tf.math.reduce_mean(tf.math.reduce_sum(po * tf.math.log(po / bo + 1e-9), axis=-1) * weights["omega"])
     bkgrd_loss = phi_bkgrd_loss + theta_bkgrd_loss + dist_bkgrd_loss + omega_bkgrd_loss
     return bkgrd_loss
 
@@ -31,3 +28,5 @@ def constraints_loss(constraints, features):
         mask, cst = constraints[type_]
         cst_loss += tf.reduce_mean(tf.keras.losses.categorical_crossentropy(cst, features[type_][mask]))
     return cst_loss
+
+# def
