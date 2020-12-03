@@ -4,7 +4,7 @@ from lib import utils
 
 class SimulatedAnnealing:
     def __init__(self, schedule, aa_probabilities_L, cst_bias):
-        self.T0, self.n_steps, self.decrease_factor, self.decrease_range = schedule
+        self.T0, self.n_steps, self.decrease_factor, self.decrease_range, self.n_muts = schedule
         self.aa_probabilities_L = aa_probabilities_L
         self.L = len(aa_probabilities_L)
         self.idx_allowed = np.arange(self.L)[np.any((aa_probabilities_L != 0.0) & (aa_probabilities_L != 1.0), axis=1)]
@@ -52,7 +52,7 @@ class SimulatedAnnealing:
 
     def sampler(self, msa):
         current_msa = msa.copy()
-        for i in range(1):
+        for i in range(self.n_muts):
             idx = np.random.choice(self.idx_allowed)
             current_msa[0, idx] = np.random.choice(self.aa_idx, p=self.aa_probabilities_L[idx])
         return current_msa

@@ -22,10 +22,13 @@ def get_arguments():
     parser.add_argument("--trmodel=", type=str, required=False, dest="trmodel_directory", default="../models/trmodel", help="path to trRosetta network weights")
     parser.add_argument("--background=", type=str, required=False, dest="background_directory", default="../models/bkgrd", help="path to background network weights")
     parser.add_argument("--bkgrd_loss_weights_file=", type=str, required=False, dest="bkgrd_loss_weights_file", default=None, help="path of background loss weights file")
+    parser.add_argument("--aa_weight=", type=float, required=False, dest="aa_weight", default=None, help="weight for the aa composition biasing loss term")
+    parser.add_argument("--loop_indices=", type=str, required=False, dest="loop_indices", default=None, help="loop indices (left-right)")
+    parser.add_argument("--loop_weight=", type=float, required=False, dest="loop_weight", default=1.0, help="loop loss weight")
+    parser.add_argument("--domain_weight=", type=float, required=False, dest="domain_weight", default=None, help="domain loss weight")
     parser.add_argument("--cst_bias=", type=float, required=False, dest="cst_bias", default=0.2, help="bias of the constraints loss term")
-    parser.add_argument("--aa_weight=", type=float, required=False, dest="aa_weight", default=0.0, help="weight for the aa composition biasing loss term")
-    parser.add_argument("--schedule=", type=str, required=False, dest='schedule',
-                        default="0.1,20000,2.0,5000", help="simulated annealing schedule: 'T0,n_steps,decrease_factor,decrease_range'")
+    parser.add_argument("--schedule=", type=str, required=False, dest="schedule",
+                        default="0.1,20000,2.0,5000,1", help="simulated annealing schedule: 'T0,n_steps,decrease_factor,decrease_range,n_muts'")
     args = parser.parse_args()
     return args
 
@@ -74,20 +77,46 @@ def main():
     if args.cstfile:
         constraints = utils.parse_cstfile(args.cstfile, L)
 
+    if args.loop_indices:
+        left, right = args.loop_indices.split("-")
+        left, right = int(left), int(right)
+        loop_weights = np.full((L, L), 0.0)
+        loop_weights[:, left - 1:right] = 1.0
+        loop_weights[left - 1:right, :] = 1.0
+
+        if args.domain_weight:
+            get_features_A = networks.GetFeatures(args.trmodel_directory, left - 1)
+            get_features_B = networks.GetFeatures(args.trmodel_directory, L - right)
+
     def loss_function(msa):
         features = get_features.predict(msa)
         background_loss = losses.background_loss(bkgrd, features, bkgrd_loss_weights)
-        aa_loss = losses.aa_loss(msa)
-        total_loss = background_loss + args.aa_weight * aa_loss
-        if args.cstfile:
-            cst_loss = losses.constraints_loss(constraints, features)
-            return {"background_loss": background_loss, "aa_loss": aa_loss, "total_loss": total_loss, "constraints_loss": cst_loss}
-        else:
-            return {"background_loss": background_loss, "aa_loss": aa_loss, "total_loss": total_loss}
+        loss = {"background_loss": background_loss, "total_loss": background_loss}
 
-    ### T0, n_steps, decrease_factor, decrease_range
+        if args.aa_weight:
+            loss["aa_loss"] = losses.aa_loss(msa)
+            loss["total_loss"] += args.aa_weight * loss["aa_loss"]
+
+        if args.loop_indices:
+            loss["loop_loss"] = losses.loop_loss(features, loop_weights)
+            loss["total_loss"] += args.loop_weight * loss["loop_loss"]
+
+            if args.domain_weight:
+                msa_A = msa[:, :left - 1]
+                msa_B = msa[:, right:]
+                features_A = get_features_A.predict(msa_A)
+                features_B = get_features_B.predict(msa_B)
+                loss["domain_loss"] = losses.domain_loss(features_A, features_B, left, right, features)
+                loss["total_loss"] += args.domain_weight * loss["domain_loss"]
+
+        if args.cstfile:
+            loss["constraints_loss"] = losses.constraints_loss(constraints, features)
+
+        return loss
+
+    ### T0, n_steps, decrease_factor, decrease_range, n_muts
     tmp = args.schedule.split(",")
-    schedule = [float(tmp[0]), int(tmp[1]), float(tmp[2]), int(tmp[3])]
+    schedule = [float(tmp[0]), int(tmp[1]), float(tmp[2]), int(tmp[3]), int(tmp[4])]
 
     ### optimizer
     optimizer = optimizers.SimulatedAnnealing(schedule, aa_probabilities_L, cst_bias=args.cst_bias)

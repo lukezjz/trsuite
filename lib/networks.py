@@ -3,10 +3,9 @@ import tensorflow_addons as tfa
 import numpy as np
 import os
 
-
-gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
-for gpu in gpus:
-    tf.config.experimental.set_memory_growth(gpu, True)
+# gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
+# for gpu in gpus:
+#     tf.config.experimental.set_memory_growth(gpu, True)
 
 
 # bkgrd_folder = "bkgrd01"
@@ -60,6 +59,7 @@ class ResNetBlock(tf.keras.layers.Layer):   # tested
         #                                            gamma_initializer=tf.keras.initializers.constant(initializers['in2_gamma']))
         self.elu2 = tf.keras.layers.Activation(tf.keras.activations.elu)
 
+    @tf.function
     def call(self, inputs, **kwargs):
         identity = self.identity(inputs)
         conv1 = self.conv1(inputs)
@@ -104,6 +104,7 @@ class TrNet(tf.keras.Model):   # tested
         #                                         kernel_initializer=tf.keras.initializers.constant(Conv2d_kernel[-1]),
         #                                         bias_initializer=tf.keras.initializers.constant(Conv2d_bias[-1]))
 
+    @tf.function
     def call(self, inputs, **kwargs):
         conv = self.conv(inputs)
         in_ = self.in_(conv)

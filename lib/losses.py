@@ -29,4 +29,11 @@ def constraints_loss(constraints, features):
         cst_loss += tf.reduce_mean(tf.keras.losses.categorical_crossentropy(cst, features[type_][mask]))
     return cst_loss
 
-# def
+
+def loop_loss(features, weights):
+    return tf.math.reduce_mean(tf.math.reduce_sum(features["dist"] * tf.math.log(features["dist"] + 1e-9), axis=-1) * weights)   # no negative symbol
+
+
+def domain_loss(features_A, features_B, left, right, features):
+    return tf.reduce_mean(tf.keras.losses.categorical_crossentropy(features_A["dist"], features["dist"][:left - 1, :left - 1])) + \
+           tf.reduce_mean(tf.keras.losses.categorical_crossentropy(features_B["dist"], features["dist"][right:, right:]))
